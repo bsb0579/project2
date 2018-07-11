@@ -46,6 +46,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".myGallery"/>
+        <activity android:name=".TestActivity"/>
     </application>
 
 </manifest>
