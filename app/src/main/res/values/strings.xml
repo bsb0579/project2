@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Project1ver3</string>
+    <string name= "facebook_app_id">2030908803610544</string>
+    <string name="fb_login_protocol_scheme">fb2030908803610544</string>
     <string name="tab_text_1">Phone number</string>
     <string name="tab_text_2">Gallery</string>
     <string name="tab_text_3">Games and more!</string>
