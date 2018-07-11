@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
@@ -28,14 +29,14 @@ import android.widget.TextView;
 import android.widget.Filter;
 
 
-
-
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 
 import com.facebook.CallbackManager;
@@ -47,6 +48,26 @@ import com.facebook.Profile;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.net.ProtocolException;
 
 import org.json.JSONObject;
 
@@ -58,6 +79,8 @@ public class Contacts extends Fragment implements View.OnClickListener{
     ArrayList<ListViewItem> datalist;
     private CallbackManager callbackManager;
     private String Idtoken;
+    String id ="";
+    String getit="";
     // ListViewAdapter mAdapter = new ListViewAdapter();
     //private ArrayList<ListViewItem> mItemList = new ArrayList<>();
 
@@ -115,9 +138,9 @@ public class Contacts extends Fragment implements View.OnClickListener{
                     @Override
                     public void onCompleted(JSONObject object, GraphResponse response) {
                         Log.v("result",object.toString());
-                        Idtoken = Profile.getCurrentProfile().getId();
+                        Idtoken = Profile.getCurrentProfile().getId().toString();
                         Log.v("token",Idtoken);
-
+                        id = Idtoken;
 
                     }
                 });
@@ -133,7 +156,8 @@ public class Contacts extends Fragment implements View.OnClickListener{
 
             @Override
             public void onCancel() {
-
+                Idtoken="";
+                id = "";
             }
 
             @Override
@@ -141,6 +165,9 @@ public class Contacts extends Fragment implements View.OnClickListener{
                 Log.e("로그인실패",error.toString());
             }
         });
+
+
+
 
 
 
@@ -231,11 +258,37 @@ public class Contacts extends Fragment implements View.OnClickListener{
                 break;
 
             case R.id.btnget:
+                if(id == ""){
+                    final Toast tag = Toast.makeText(getContext(), "로그인 하세요",Toast.LENGTH_LONG);
+                    tag.show();
+                    break;
+                }
+
+
+
                 break;
+
             case R.id.btngive:
+                if(id == ""){
+                    final Toast tag2 = Toast.makeText(getContext(), "로그인 하세요",Toast.LENGTH_LONG);
+                    tag2.show();
+
+
+
+
+
+                    break;
+                }
+
+
+
+
+
                 break;
         }
     }
+
+
 
     public void refresh(){
         ListViewBtnAdapter adapter;
@@ -313,7 +366,18 @@ public class Contacts extends Fragment implements View.OnClickListener{
         }
     }
 
-   
+
+
+
+
+
+
+
+
+
+
+
+
 
     public void deleteContact(Context ctx, String phone, String name) {
         Uri contactUri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phone));

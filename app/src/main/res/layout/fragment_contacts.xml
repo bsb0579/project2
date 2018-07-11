@@ -16,7 +16,7 @@
         <ListView
             android:id="@+id/listview"
             android:layout_width="match_parent"
-            android:layout_height="487dp"
+            android:layout_height="498dp"
             android:layout_below="@id/down" />
 
 
@@ -74,7 +74,7 @@
         android:orientation="horizontal">
 
         <ImageButton
-            android:id="@+id/btnget"
+            android:id="@+id/btngive"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginLeft="123dp"
@@ -87,7 +87,7 @@
             android:src="@drawable/backup_states" />
 
         <ImageButton
-            android:id="@+id/btngive"
+            android:id="@+id/btnget"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_margin="4dp"
