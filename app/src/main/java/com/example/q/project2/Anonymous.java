@@ -61,6 +61,15 @@ public class Anonymous extends Fragment {
                 context.startActivity(intent);
             }
         });
+        Button savebtn = (Button) rootView.findViewById(R.id.button3);
+        savebtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Context context = getContext();
+                Intent intent = new Intent(context,UploadActivity.class);
+                context.startActivity(intent);
+            }
+        });
         return rootView;
     }
 }
