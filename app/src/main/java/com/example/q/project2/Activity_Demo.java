@@ -27,6 +27,10 @@ import android.support.design.widget.TabLayout;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
+
+
+import java.util.ArrayList;
 
 public class Activity_Demo extends AppCompatActivity {
 
@@ -50,24 +54,39 @@ public class Activity_Demo extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity__demo);
 
-        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        ArrayList<String> permissions = new ArrayList<>();
+        permissions.add(checkPermission(Manifest.permission.READ_CONTACTS));
+        permissions.add(checkPermission(Manifest.permission.WRITE_CONTACTS));
+        permissions.add(checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE));
+        permissions.add(checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE));
+        permissions.add(checkPermission(Manifest.permission.INTERNET));
+        while(permissions.remove(null));
+        if(!permissions.isEmpty())
+            getPermission(permissions.toArray(new String[permissions.size()]), permissions.size());
 
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        final TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
 
-        //added to inset ICONS
-        tabLayout.getTabAt(0).setIcon(R.drawable.ic_phone);
-        tabLayout.getTabAt(1).setIcon(R.drawable.ic_picture);
-        tabLayout.getTabAt(2).setIcon(R.drawable.ic_game);
+        if(permissions.isEmpty()) {
 
-        mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+
+            //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+            //setSupportActionBar(toolbar);
+            // Create the adapter that will return a fragment for each of the three
+            // primary sections of the activity.
+            mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+
+            // Set up the ViewPager with the sections adapter.
+            mViewPager = (ViewPager) findViewById(R.id.container);
+            mViewPager.setAdapter(mSectionsPagerAdapter);
+
+            final TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+
+            //added to inset ICONS
+            tabLayout.getTabAt(0).setIcon(R.drawable.ic_phone);
+            tabLayout.getTabAt(1).setIcon(R.drawable.ic_picture);
+            tabLayout.getTabAt(2).setIcon(R.drawable.ic_game);
+
+            mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
 //        tabLayout.setOnTabSelectedListener(
 //                new TabLayout.ViewPagerOnTabSelectedListener(mViewPager) {
 //                    @Override
@@ -90,8 +109,36 @@ public class Activity_Demo extends AppCompatActivity {
 //                    }
 //                }
 //        );
-        tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
+            tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
+        }
 
+
+
+        else
+            recreate();
+    }
+
+    public String checkPermission(String request){
+        if(ContextCompat.checkSelfPermission(this,request) != PackageManager.PERMISSION_GRANTED){
+            return request;
+        }
+        else
+            return null;
+    }
+    public void getPermission(String[] permissions,int request_code){
+        ActivityCompat.requestPermissions(this, permissions, request_code);
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        // If request is cancelled, the result arrays are empty.
+        if(grantResults.length > 0) {
+            for (int i = 0; i < grantResults.length; i++) {
+                if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                    Toast.makeText(this, "Permission Denied. Cannot Launch app.", Toast.LENGTH_SHORT).show();
+                    onDestroy();
+                }
+            }
+        }
     }
 
 
