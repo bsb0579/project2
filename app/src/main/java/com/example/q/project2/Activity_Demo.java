@@ -181,7 +181,7 @@ public class Activity_Demo extends AppCompatActivity {
                     Contacts tab1 = new Contacts();
                     return tab1;
                 case 1:
-                    Galleryserver tab2 = new Galleryserver();
+                    Gallery tab2 = new Gallery();
                     return tab2;
                 case 2:
                     Anonymous tab3 = new Anonymous();
@@ -203,7 +203,7 @@ public class Activity_Demo extends AppCompatActivity {
                 case 0:
                     return  "CONTACTS";
                 case 1:
-                    return  "GALLERYSERVER";
+                    return  "GALLERY";
                 case 2:
                     return "ANONYMOUS";
 
