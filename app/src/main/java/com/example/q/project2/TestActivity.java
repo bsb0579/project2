@@ -48,79 +48,79 @@ public class TestActivity extends AppCompatActivity {
         btnHit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new JsonTask().execute("http://52.231.68.137:8080/loadData");
+                new JsonTask().execute("http://52.231.153.77:8080/loadData");
             }
         });
 
 
-    }
-
-
-    private class JsonTask extends AsyncTask<String, String, String> {
-
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            pd = new ProgressDialog(TestActivity.this);
-            pd.setMessage("Please wait");
-            pd.setCancelable(false);
-            pd.show();
         }
 
-        protected String doInBackground(String... params) {
+
+        private class JsonTask extends AsyncTask<String, String, String> {
+
+            protected void onPreExecute() {
+                super.onPreExecute();
+
+                pd = new ProgressDialog(TestActivity.this);
+                pd.setMessage("Please wait");
+                pd.setCancelable(false);
+                pd.show();
+            }
+
+            protected String doInBackground(String... params) {
 
 
-            HttpURLConnection connection = null;
-            BufferedReader reader = null;
+                HttpURLConnection connection = null;
+                BufferedReader reader = null;
 
-            try {
-                URL url = new URL(params[0]);
-                connection = (HttpURLConnection) url.openConnection();
-                connection.connect();
-
-
-                InputStream stream = connection.getInputStream();
-
-                reader = new BufferedReader(new InputStreamReader(stream));
-
-                StringBuffer buffer = new StringBuffer();
-                String line = "";
-
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line+"\n");
-                    Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
-
-                }
-
-                return buffer.toString();
-
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
                 try {
-                    if (reader != null) {
-                        reader.close();
+                    URL url = new URL(params[0]);
+                    connection = (HttpURLConnection) url.openConnection();
+                    connection.connect();
+
+
+                    InputStream stream = connection.getInputStream();
+
+                    reader = new BufferedReader(new InputStreamReader(stream));
+
+                    StringBuffer buffer = new StringBuffer();
+                    String line = "";
+
+                    while ((line = reader.readLine()) != null) {
+                        buffer.append(line+"\n");
+                        Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
+
                     }
+
+                    return buffer.toString();
+
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
+                } finally {
+                    if (connection != null) {
+                        connection.disconnect();
+                    }
+                    try {
+                        if (reader != null) {
+                            reader.close();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
+                return null;
             }
-            return null;
-        }
 
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            if (pd.isShowing()){
-                pd.dismiss();
+            @Override
+            protected void onPostExecute(String result) {
+                super.onPostExecute(result);
+                if (pd.isShowing()){
+                    pd.dismiss();
+                }
+                txtJson.setText(result);
             }
-            txtJson.setText(result);
         }
     }
-}
