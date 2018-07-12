@@ -11,7 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
-import android.widget.ImageButton;
 
 import com.nbsp.materialfilepicker.MaterialFilePicker;
 import com.nbsp.materialfilepicker.ui.FilePickerActivity;
@@ -27,12 +26,12 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class UploadActivity extends AppCompatActivity {
-    private ImageButton button;
+    private Button button;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.upload_file);
-        button = (ImageButton) findViewById(R.id.button4);
+        button = (Button) findViewById(R.id.button4);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
                 requestPermissions(new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE},100);
