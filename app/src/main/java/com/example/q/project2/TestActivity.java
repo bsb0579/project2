@@ -48,7 +48,7 @@ public class TestActivity extends AppCompatActivity {
         btnHit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new JsonTask().execute("http://52.231.68.137:8080/loadData");
+                new JsonTask().execute("http://52.231.153.77:8080/loadData");
             }
         });
 
