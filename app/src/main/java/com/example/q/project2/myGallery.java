@@ -21,6 +21,7 @@ import android.webkit.MimeTypeMap;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.Gallery;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -43,7 +44,7 @@ import okhttp3.Response;
 public class myGallery extends Activity {
     RecyclerView recyclerView;
     ArrayList<String> ImgUrl= new ArrayList<>();
-    private Button button;
+    private ImageButton button;
     private int mCntAdapter = 0;
 
     @Override
@@ -52,7 +53,7 @@ public class myGallery extends Activity {
         Adapter adapter;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.gallery);
-        button = (Button) findViewById(R.id.uploadtoserv);
+        button = (ImageButton) findViewById(R.id.uploadtoserv);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
                 requestPermissions(new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE},100);
@@ -60,7 +61,7 @@ public class myGallery extends Activity {
         }
         enable_button();
 
-        Button btnTest = findViewById(R.id.btnTest);
+        ImageButton btnTest = findViewById(R.id.btnTest);
         btnTest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
