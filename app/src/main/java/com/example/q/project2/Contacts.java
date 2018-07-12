@@ -1,5 +1,6 @@
 package com.example.q.project2;
 
+import android.app.ProgressDialog;
 import android.content.ContentProviderOperation;
 import android.content.DialogInterface;
 import android.content.OperationApplicationException;
@@ -29,6 +30,7 @@ import android.widget.TextView;
 import android.widget.Filter;
 
 
+import java.io.DataOutputStream;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +49,7 @@ import com.facebook.GraphResponse;
 import com.facebook.Profile;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.google.gson.JsonObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -66,21 +69,28 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.net.ProtocolException;
-
+import org.json.JSONArray;
+import org.json.JSONStringer;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 
-public class Contacts extends Fragment implements View.OnClickListener{
+public class Contacts extends Fragment implements View.OnClickListener {
 
     ListView listview ;
     ArrayList<Map<String,String>> datalist2;
     ArrayList<ListViewItem> datalist;
     private CallbackManager callbackManager;
     private String Idtoken;
-    String id ="";
-    String getit="";
+    String id ="123";
+    String getit;
+    String send;
+    ProgressDialog pd;
+    String Jsondata;
     // ListViewAdapter mAdapter = new ListViewAdapter();
     //private ArrayList<ListViewItem> mItemList = new ArrayList<>();
 
@@ -107,28 +117,28 @@ public class Contacts extends Fragment implements View.OnClickListener{
 
 
 
-       // EditText editText = v.findViewById(R.id.editTextFilter);
-       // editText.addTextChangedListener(new TextWatcher() {
-       //     @Override
-       //     public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+        // EditText editText = v.findViewById(R.id.editTextFilter);
+        // editText.addTextChangedListener(new TextWatcher() {
+        //     @Override
+        //     public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-       //     }
+        //     }
 
         //    @Override
         //    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // ((ListViewBtnAdapter) listview.getAdapter()).getFilter().filter(charSequence);
-         //   }
+        // ((ListViewBtnAdapter) listview.getAdapter()).getFilter().filter(charSequence);
+        //   }
 
-         //   @Override
-         //   public void afterTextChanged(Editable editable) {
-          //      String filterText = editable.toString() ;
-                //if (filterText.length() > 0) { listview.setFilterText(filterText) ; }
-                //  else { listview.clearTextFilter() ; }
+        //   @Override
+        //   public void afterTextChanged(Editable editable) {
+        //      String filterText = editable.toString() ;
+        //if (filterText.length() > 0) { listview.setFilterText(filterText) ; }
+        //  else { listview.clearTextFilter() ; }
 
-            //    ((ListViewBtnAdapter) listview.getAdapter()).getFilter().filter(filterText);
+        //    ((ListViewBtnAdapter) listview.getAdapter()).getFilter().filter(filterText);
 
-         //   }
-       // });
+        //   }
+        // });
 
 
         facebook_btn.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
@@ -157,7 +167,7 @@ public class Contacts extends Fragment implements View.OnClickListener{
             @Override
             public void onCancel() {
                 Idtoken="";
-                id = "";
+                id = "123";
             }
 
             @Override
@@ -173,6 +183,7 @@ public class Contacts extends Fragment implements View.OnClickListener{
 
         return v;
     }
+
 
 
     public void onClick(View v){
@@ -258,42 +269,102 @@ public class Contacts extends Fragment implements View.OnClickListener{
                 break;
 
             case R.id.btnget:
-                if(id == ""){
+                if(id == "123"){
                     final Toast tag = Toast.makeText(getContext(), "로그인 하세요",Toast.LENGTH_LONG);
                     tag.show();
                     break;
                 }
 
 
+                new JsonTask().execute("http://52.231.68.137:8080/loadData");
+                Cursor cursor = getContext().getContentResolver().query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+                while (cursor.moveToNext()) {
+                    String lookupKey = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.LOOKUP_KEY));
+                    Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI, lookupKey);
+                    getContext().getContentResolver().delete(uri, null, null);
+                }
 
+                try {
+                    jsontocontact(getit);
+                }
+                catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                refresh();
                 break;
 
             case R.id.btngive:
-                if(id == ""){
+                if(id == "123"){
                     final Toast tag2 = Toast.makeText(getContext(), "로그인 하세요",Toast.LENGTH_LONG);
                     tag2.show();
-
-
-
-
-
                     break;
                 }
+                parsing_json();
+                post_string(Jsondata, "/addrec");
+                Log.i("post","posttest");
 
-
-
-
-
+                refresh();
                 break;
         }
     }
 
 
 
+    public void parsing_json(){
+        Jsondata = "";
+        if(datalist2.size()!=0) {
+            Jsondata ="["+ "{\"name\"" + ":" + "\"" + datalist2.get(0).get("name") + "\"" + ","
+                    + "\"phone\"" + ":" + "\"" + datalist2.get(0).get("phone") + "\"" + "}";
+            for (int i = 1; i < datalist2.size(); i++) {
+                String tempJson = ","+"{\"name\"" + ":" + "\"" + datalist2.get(i).get("name") + "\"" + ","
+                        + "\"phone\"" + ":" + "\"" + datalist2.get(i).get("phone") + "\"" + "}";
+                Jsondata = Jsondata + tempJson;
+            }
+            Jsondata = Jsondata + "]";
+        }
+
+        Jsondata = "{\"ID\":\""+id+"\",\"phonebook\":\n" + Jsondata+"}";
+    }
+
+
+
+
+
+
+
+    public void jsontocontact(String str) throws JSONException{
+
+        str = "{"+"\""+"what"+"\""+":"+str+"}";
+
+        JSONObject jsonObject = new JSONObject(str);
+        JSONArray jsonArray = jsonObject.getJSONArray("what");
+        for(int i=0;i<jsonArray.length();i++)
+        {
+            JSONObject curr = jsonArray.getJSONObject(i);
+
+            String nm = curr.getString("name");
+            String ph = curr.getString("phone");
+            addContact(ph, nm);
+//Do stuff with the Prize String here
+//Add it to a list, print it out, etc.
+        }
+
+        //JSONArray jsonarray = new JSONArray(str);
+
+
+        //  for (int i = 0; i < jsonarray.length(); i++) {
+        //     JSONObject jsonobject = jsonarray.getJSONObject(i);
+        //     String nm = jsonobject.getString("name");
+        //     String ph = jsonobject.getString("phone");
+        //     addContact(ph, nm);
+        // }
+    }
+
+
     public void refresh(){
         ListViewBtnAdapter adapter;
         datalist = new ArrayList<ListViewItem>() ;
-       datalist2 = new ArrayList<Map<String,String>>();
+        datalist2 = new ArrayList<Map<String,String>>();
 
 
         Cursor c = getActivity().getContentResolver().query(ContactsContract.Contacts.CONTENT_URI,
@@ -333,7 +404,7 @@ public class Contacts extends Fragment implements View.OnClickListener{
 
         adapter = new ListViewBtnAdapter(getActivity(), R.layout.listview_contacts, datalist);
 
-         listview.setAdapter(adapter);
+        listview.setAdapter(adapter);
     }
 
     @Override
@@ -367,17 +438,125 @@ public class Contacts extends Fragment implements View.OnClickListener{
     }
 
 
+    public static void post_string(String sent, final String destination){
+        try {
+            final JSONObject contact_jsonobj = new JSONObject(sent); // The actual JSON Object to be sent
+            new Thread(){
+                public void run(){
+                    try {
+                        // SEND REQUEST TO POST METHOD CODE
+                        // 52.162.211.235:7714 / contact?hash=213412341 :받아오기(GET)
+                        // /contactHandle    (POST) hash : 132412341, contacts : [{ "name" : "asdfh"
+                        URL url = new URL("http://52.231.68.137:8080" + destination);
+                        HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                        httpURLConnection.setRequestMethod("POST");
+                        httpURLConnection.setDoOutput(true);
+                        httpURLConnection.setRequestProperty("Content-Type","application/json");
+                        httpURLConnection.setRequestProperty("Accept","application/json");
+
+                        DataOutputStream wr = new DataOutputStream(httpURLConnection.getOutputStream());
+                        wr.write(contact_jsonobj.toString().getBytes());
+                        Integer responsecode = httpURLConnection.getResponseCode();
+
+                        BufferedReader bufferedReader;
+
+                        if(responsecode>199 && responsecode < 300){
+                            bufferedReader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
+                        } else {
+                            bufferedReader = new BufferedReader(new InputStreamReader(httpURLConnection.getErrorStream()));
+                        }
+                        // get response part
+                        StringBuilder content = new StringBuilder();
+                        String line;
+                        while ((line=bufferedReader.readLine()) != null) {
+                            content.append(line).append("\n");
+                        }
+                        bufferedReader.close();
+
+                        Log.i("response",content.toString());
+                        /// POST TO SERVER
+                    } catch (ProtocolException e) {
+                        e.printStackTrace();
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }.start();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
 
+    private class JsonTask extends AsyncTask<String, String, String> {
+
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            pd = new ProgressDialog(getContext());
+            pd.setMessage("Please wait");
+            pd.setCancelable(false);
+            pd.show();
+        }
+
+        protected String doInBackground(String... params) {
 
 
+            HttpURLConnection connection = null;
+            BufferedReader reader = null;
+
+            try {
+                URL url = new URL(params[0]);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
 
 
+                InputStream stream = connection.getInputStream();
+
+                reader = new BufferedReader(new InputStreamReader(stream));
+
+                StringBuffer buffer = new StringBuffer();
+                String line = "";
+
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line+"\n");
+                    Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
+
+                }
+
+                return buffer.toString();
 
 
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+                try {
+                    if (reader != null) {
+                        reader.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
 
-
-
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            if (pd.isShowing()){
+                pd.dismiss();
+            }
+            getit = result;
+        }
+    }
 
     public void deleteContact(Context ctx, String phone, String name) {
         Uri contactUri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phone));
@@ -407,42 +586,42 @@ public class Contacts extends Fragment implements View.OnClickListener{
         Thread thread2 = new Thread(){
             @Override
             public void run() {
-        ArrayList<ContentProviderOperation> list = new ArrayList<>();
-        try {
-            list.add(
-                    ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
-                            .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, null)
-                            .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, null)
-                            .build()
-            );
+                ArrayList<ContentProviderOperation> list = new ArrayList<>();
+                try {
+                    list.add(
+                            ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
+                                    .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, null)
+                                    .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, null)
+                                    .build()
+                    );
 
-            list.add(
-                    ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                            .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                    list.add(
+                            ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
 
-                            .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-                            .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, value2)   //이름
+                                    .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
+                                    .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, value2)   //이름
 
-                            .build()
-            );
+                                    .build()
+                    );
 
-            list.add(
-                    ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                            .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                    list.add(
+                            ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
 
-                            .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-                            .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, value1)           //전화번호
-                            .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE)   //번호타입(Type_Mobile : 모바일)
+                                    .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+                                    .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, value1)           //전화번호
+                                    .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE)   //번호타입(Type_Mobile : 모바일)
 
-                            .build()
-            );
-            getContext().getApplicationContext().getContentResolver().applyBatch(ContactsContract.AUTHORITY, list);  //주소록추가
-            list.clear();   //리스트 초기화
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        } catch (OperationApplicationException e) {
-            e.printStackTrace();
-        }
+                                    .build()
+                    );
+                    getContext().getApplicationContext().getContentResolver().applyBatch(ContactsContract.AUTHORITY, list);  //주소록추가
+                    list.clear();   //리스트 초기화
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                } catch (OperationApplicationException e) {
+                    e.printStackTrace();
+                }
             }
         };
         thread2.start();
@@ -455,10 +634,10 @@ public class Contacts extends Fragment implements View.OnClickListener{
 
         int resourceId ;
         //private ArrayList<ListViewItem> a = datalist ;
-       // private ArrayList<ListViewItem> filteredItemList = a ;
+        // private ArrayList<ListViewItem> filteredItemList = a ;
         //Filter listFilter ;
 
-       // @Override public int getCount() { return filteredItemList.size() ; }
+        // @Override public int getCount() { return filteredItemList.size() ; }
 
 
 
@@ -466,11 +645,11 @@ public class Contacts extends Fragment implements View.OnClickListener{
         ListViewBtnAdapter(Context context, int resource, ArrayList<ListViewItem> list) {
             super(context, resource, list) ;
 
-        // resource id 값 복사. (super로 전달된 resource를 참조할 방법이 없음.)
+            // resource id 값 복사. (super로 전달된 resource를 참조할 방법이 없음.)
             this.resourceId = resource ;
 
 
-    }
+        }
 
         // 새롭게 만든 Layout을 위한 View를 생성하는 코드
         @Override
@@ -498,7 +677,7 @@ public class Contacts extends Fragment implements View.OnClickListener{
             ImageButton button1 = (ImageButton) convertView.findViewById(R.id.delete_info);
             button1.setOnClickListener(new ImageButton.OnClickListener() {
                 public void onClick(View v) {
-                   deleteContact(getContext(), datalist2.get(pos).get("phone"), datalist2.get(pos).get("name"));
+                    deleteContact(getContext(), datalist2.get(pos).get("phone"), datalist2.get(pos).get("name"));
                     refresh();
                 }
             });
@@ -570,7 +749,7 @@ public class Contacts extends Fragment implements View.OnClickListener{
                                 final String value2 = name1.getText().toString();
                                 addContact(value1, value2);
                                 refresh();
-                                }
+                            }
                         }
                     });
 
@@ -592,39 +771,39 @@ public class Contacts extends Fragment implements View.OnClickListener{
             return convertView;
         }
 
-       // @Override public long getItemId(int position) { return position ; }
-       // @Override public Object getItem(int position) { return filteredItemList.get(position) ; }
+        // @Override public long getItemId(int position) { return position ; }
+        // @Override public Object getItem(int position) { return filteredItemList.get(position) ; }
         //@Override public Filter getFilter() { if (listFilter == null) { listFilter = new ListFilter() ; } return listFilter ; }
-       // private class ListFilter extends Filter {
+        // private class ListFilter extends Filter {
 
-       //     @Override
-       //     protected FilterResults performFiltering(CharSequence constraint) {
+        //     @Override
+        //     protected FilterResults performFiltering(CharSequence constraint) {
         //        FilterResults results = new FilterResults();
 
-         //       if (constraint == null || constraint.length() == 0) {
-         //           results.values = a;
-          //          results.count = a.size();
-           //     } else {
-            //        ArrayList<ListViewItem> itemList = new ArrayList<ListViewItem>();
+        //       if (constraint == null || constraint.length() == 0) {
+        //           results.values = a;
+        //          results.count = a.size();
+        //     } else {
+        //        ArrayList<ListViewItem> itemList = new ArrayList<ListViewItem>();
 
-           //         for (ListViewItem item : a) {
-             //           if (item.getName().toUpperCase().contains(constraint.toString().toUpperCase()) ||
-            //                    item.getPhone().toUpperCase().contains(constraint.toString().toUpperCase())) {
-            //                itemList.add(item);
-             //           }
-             //       }
+        //         for (ListViewItem item : a) {
+        //           if (item.getName().toUpperCase().contains(constraint.toString().toUpperCase()) ||
+        //                    item.getPhone().toUpperCase().contains(constraint.toString().toUpperCase())) {
+        //                itemList.add(item);
+        //           }
+        //       }
 
-                //    results.values = itemList;
-               //     results.count = itemList.size();
-              //  }
-          //      return results;
-           // }
+        //    results.values = itemList;
+        //     results.count = itemList.size();
+        //  }
+        //      return results;
+        // }
 
-          //  @Override protected void publishResults(CharSequence constraint, FilterResults results) {
-                // update listview by filtered data list.
-           //     filteredItemList = (ArrayList<ListViewItem>) results.values ;
-                // notify
-             //   if (results.count > 0) { notifyDataSetChanged() ; } else { notifyDataSetInvalidated() ; } }
-      //  }
+        //  @Override protected void publishResults(CharSequence constraint, FilterResults results) {
+        // update listview by filtered data list.
+        //     filteredItemList = (ArrayList<ListViewItem>) results.values ;
+        // notify
+        //   if (results.count > 0) { notifyDataSetChanged() ; } else { notifyDataSetInvalidated() ; } }
+        //  }
     }
 }
