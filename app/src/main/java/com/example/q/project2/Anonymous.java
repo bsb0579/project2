@@ -70,6 +70,15 @@ public class Anonymous extends Fragment {
                 context.startActivity(intent);
             }
         });
+        Button audio = (Button) rootView.findViewById(R.id.button4);
+        audio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Context context = getContext();
+                Intent intent = new Intent(context,AudioOnTouchActivity.class);
+                context.startActivity(intent);
+            }
+        });
         return rootView;
     }
 }
